@@ -7,6 +7,7 @@ import AppShell from '@/components/AppShell'
 import ThemeSync from '@/components/ThemeSync'
 import ServiceWorker from '@/components/ServiceWorker'
 import { SITE_URL } from '@/lib/site'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL ? new URL(SITE_URL) : undefined,
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeSync />
         <ServiceWorker />
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   )

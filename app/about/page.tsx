@@ -57,8 +57,9 @@ export default function AboutPage() {
       <section className="mt-12">
         <h2 className="font-serif text-xl font-semibold">Your privacy</h2>
         <p className="mt-2 text-ink-2">
-          There is no account and no tracking. Your highlights, notes and plans are stored on your device and never leave it
-          unless you export a backup yourself.
+          There is no account and no ads. Your highlights, notes and plans are stored on your device and never leave it
+          unless you export a backup yourself. We count anonymous page visits with Vercel Web Analytics, which uses no
+          cookies and collects no personal data, so we know which pages people use.
         </p>
       </section>
 
