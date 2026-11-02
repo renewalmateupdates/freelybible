@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
-import BookIndex from '@/components/reader/BookIndex'
+import LibraryView from '@/components/library/LibraryView'
 
 export const metadata: Metadata = {
-  title: 'Read the Bible',
-  description: 'All 66 books of the Bible, free to read in four translations. No account, no ads.',
+  title: 'Library',
+  description:
+    'Read the Bible, Quran, Tanakh, Bhagavad Gita, Dhammapada, Tao Te Ching, Analects and Book of Mormon free. No ads, no account.',
 }
 
-export default function ReadPage() {
-  return <BookIndex />
+export default function LibraryPage() {
+  return <LibraryView />
 }

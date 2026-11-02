@@ -2,13 +2,13 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
 import { COST_ITEMS, FREE_FEATURES } from '@/lib/costs'
-import { TRANSLATIONS } from '@/lib/translations'
+import { COLLECTIONS, TRANSLATIONS } from '@/lib/library'
 import { PageTitle } from '@/components/ui'
 
 export const metadata: Metadata = {
   title: 'Why Freely is free',
   description:
-    'Freely Bible is free because the Word is free. No ads, no account, no paywall. Here is exactly what costs money and how it is priced.',
+    'Freely Scripture is free because the Word is free. No ads, no account, no paywall. Here is exactly what costs money and how it is priced.',
 }
 
 const STATUS_LABEL = { live: 'In the app', planned: 'Planned', 'not built': 'Not built yet' } as const
@@ -67,9 +67,27 @@ export default function AboutPage() {
         <ul className="mt-3 space-y-2 text-sm text-ink-2">
           {TRANSLATIONS.map((t) => (
             <li key={t.id}>
-              <span className="font-semibold text-ink">{t.name}</span> ({t.short}, {t.year}): {t.license}.
+              <span className="font-semibold text-ink">{t.name}</span> ({COLLECTIONS.find((c) => c.id === t.collection)?.name}, {t.year}): {t.license}.
             </li>
           ))}
+          <li>
+            Quran Arabic text and the digital Pickthall text from the{' '}
+            <a className="text-accent underline" href="https://tanzil.net" target="_blank" rel="noreferrer">
+              Tanzil Project (tanzil.net)
+            </a>
+            , via the{' '}
+            <a className="text-accent underline" href="https://github.com/fawazahmed0/quran-api" target="_blank" rel="noreferrer">
+              quran-api
+            </a>{' '}
+            collection. The Arabic is shown exactly as published.
+          </li>
+          <li>
+            Bhagavad Gita, Dhammapada, Tao Te Ching, Analects and Book of Mormon texts from{' '}
+            <a className="text-accent underline" href="https://www.gutenberg.org" target="_blank" rel="noreferrer">
+              Project Gutenberg
+            </a>
+            . In the Dhammapada, verse 127 is missing from that edition and is marked as missing.
+          </li>
           <li>
             Cross-references from{' '}
             <a className="text-accent underline" href="https://www.openbible.info/labs/cross-references/" target="_blank" rel="noreferrer">
@@ -78,7 +96,7 @@ export default function AboutPage() {
             , licensed CC BY.
           </li>
           <li>
-            Bible text files from the{' '}
+            Bible, Tanakh and Catholic Bible text files from the{' '}
             <a className="text-accent underline" href="https://github.com/scrollmapper/bible_databases" target="_blank" rel="noreferrer">
               scrollmapper Bible databases
             </a>
@@ -88,7 +106,7 @@ export default function AboutPage() {
             In the KJV, the capitalized divine name (LORD) was restored using the markup of the CrossWire Bible Society KJV
             module.
           </li>
-          <li>Literata and Inter typefaces, SIL Open Font License. Icons by Lucide, ISC License.</li>
+          <li>Literata, Inter and Amiri typefaces, SIL Open Font License. Icons by Lucide, ISC License.</li>
         </ul>
       </section>
 

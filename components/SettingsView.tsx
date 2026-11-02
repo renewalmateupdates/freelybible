@@ -3,10 +3,22 @@
 import { useRef, useState } from 'react'
 import Link from 'next/link'
 import { Check, Download, Upload } from 'lucide-react'
-import { BOOKS } from '@/lib/books'
-import { clearAll, exportData, importData, updateSettings, useHydrated, useStore, type Theme } from '@/lib/store'
-import { TRANSLATIONS } from '@/lib/translations'
+import { translationsOf, visibleCollections } from '@/lib/library'
+import { isNativeApp } from '@/lib/install'
+import { libraryFiles, markOfflineSaved, saveFiles } from '@/lib/offline'
+import {
+  clearAll,
+  exportData,
+  importData,
+  setTranslation,
+  updateSettings,
+  useHydrated,
+  useStore,
+  type Theme,
+} from '@/lib/store'
 import { PageTitle, useToast } from '@/components/ui'
+import InstallSheet from '@/components/InstallSheet'
+import LibraryPicker, { collectionsFor, traditionsFor } from '@/components/library/LibraryPicker'
 
 const THEMES: { id: Theme; label: string }[] = [
   { id: 'system', label: 'Match phone' },
@@ -15,43 +27,20 @@ const THEMES: { id: Theme; label: string }[] = [
   { id: 'dark', label: 'Dark' },
 ]
 
-function isNative() {
-  const w = window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }
-  return Boolean(w.Capacitor?.isNativePlatform?.())
-}
-
 export default function SettingsView() {
   const hydrated = useHydrated()
   const settings = useStore((s) => s.settings)
   const toast = useToast()
   const file = useRef<HTMLInputElement>(null)
   const [offline, setOffline] = useState<{ done: number; total: number } | null>(null)
+  const [installOpen, setInstallOpen] = useState(false)
 
   async function downloadOffline() {
-    const paths = [
-      ...TRANSLATIONS.flatMap((t) => [...BOOKS.map((b) => `/data/${t.id}/${b.slug}.json`), `/data/${t.id}/feed.json`]),
-      ...BOOKS.map((b) => `/data/xref/${b.slug}.json`),
-      '/data/votd.json',
-    ]
-    setOffline({ done: 0, total: paths.length })
-    let done = 0
-    let failed = 0
-    const queue = [...paths]
-    const worker = async () => {
-      while (queue.length) {
-        const p = queue.shift()!
-        try {
-          const r = await fetch(p)
-          if (!r.ok) failed++
-          await r.arrayBuffer()
-        } catch {
-          failed++
-        }
-        setOffline({ done: ++done, total: paths.length })
-      }
-    }
-    await Promise.all(Array.from({ length: 6 }, worker))
-    toast.show(failed ? `Saved, but ${failed} files failed. Try again on a better connection.` : 'Everything is saved for offline')
+    const files = libraryFiles()
+    setOffline({ done: 0, total: files.length })
+    const failed = await saveFiles(files, (done, total) => setOffline({ done, total }))
+    if (!failed) markOfflineSaved()
+    toast.show(failed ? `Saved, but ${failed} files failed. Try again on a better connection.` : 'Your library is saved for offline')
   }
 
   function backup() {
@@ -76,28 +65,61 @@ export default function SettingsView() {
 
   if (!hydrated) return <div className="mx-auto max-w-3xl px-4 py-8" />
 
+  const picked = traditionsFor(settings.library)
+  const cols = visibleCollections(settings.library)
+  const multi = cols.filter((c) => c.translations.length > 1)
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <PageTitle eyebrow="Settings" title="Make it yours" />
 
-      <Section title="Translation">
-        <div className="space-y-1">
-          {TRANSLATIONS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => updateSettings({ translation: t.id })}
-              aria-pressed={settings.translation === t.id}
-              className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${
-                settings.translation === t.id ? 'bg-accent-soft' : 'hover:bg-surface-2'
-              }`}
-            >
-              <span className="w-12 text-sm font-bold text-accent">{t.short}</span>
-              <span className="flex-1 font-medium">{t.name}</span>
-              {settings.translation === t.id && <Check className="h-5 w-5 text-accent" />}
-            </button>
-          ))}
-        </div>
+      <Section title="Your library" id="library">
+        <p className="mb-3 text-sm text-ink-2">Pick the traditions you want to see. Pick none to see everything.</p>
+        <LibraryPicker picked={picked} onChange={(t) => updateSettings({ library: collectionsFor(t) })} />
+        {settings.library && settings.library.length > 0 && (
+          <button onClick={() => updateSettings({ library: [] })} className="mt-3 text-sm font-medium text-accent underline">
+            Show everything instead
+          </button>
+        )}
       </Section>
+
+      {multi.length > 0 && (
+        <Section title="Translations">
+          {multi.map((col) => {
+            const current = settings.translations[col.id] && col.translations.includes(settings.translations[col.id]) ? settings.translations[col.id] : col.translations[0]
+            return (
+              <div key={col.id} className="mb-4 last:mb-0">
+                <p className="mb-1 text-sm font-medium text-ink-3">{col.name}</p>
+                <div className="space-y-1">
+                  {translationsOf(col.id).map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setTranslation(col.id, t.id)}
+                      aria-pressed={current === t.id}
+                      className={`flex w-full items-center gap-3 rounded-xl p-3 text-left ${current === t.id ? 'bg-accent-soft' : 'hover:bg-surface-2'}`}
+                    >
+                      <span className="w-16 shrink-0 text-sm font-bold text-accent">{t.short}</span>
+                      <span className="flex-1 font-medium">{t.name}</span>
+                      {current === t.id && <Check className="h-5 w-5 text-accent" />}
+                    </button>
+                  ))}
+                </div>
+                {col.original && (
+                  <label className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-surface-2 p-3 text-sm font-medium">
+                    Show the Arabic alongside the English
+                    <input
+                      type="checkbox"
+                      checked={settings.showOriginal}
+                      onChange={(e) => updateSettings({ showOriginal: e.target.checked })}
+                      className="h-5 w-5 accent-[var(--accent)]"
+                    />
+                  </label>
+                )}
+              </div>
+            )
+          })}
+        </Section>
+      )}
 
       <Section title="Reading">
         <label htmlFor="size" className="flex items-center justify-between text-sm font-medium">
@@ -140,40 +162,41 @@ export default function SettingsView() {
         </div>
       </Section>
 
-      <Section title="Offline">
-        {isNative() ? (
-          <p className="text-sm text-ink-2">Every translation is already on your phone. Freely works without a connection.</p>
+      <Section title="App and offline">
+        {isNativeApp() ? (
+          <p className="text-sm text-ink-2">Everything is already on your phone. Freely works without a connection.</p>
         ) : (
           <>
             <p className="text-sm text-ink-2">
-              Save all four translations, cross-references and the feed to this browser (about 20 MB) so Freely works without
-              a connection.
+              Install Freely to your home screen to use it like an app. Save your library to read with no connection; once
+              installed, it saves automatically.
             </p>
-            <button
-              onClick={downloadOffline}
-              disabled={offline !== null && offline.done < offline.total}
-              className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl border border-line px-4 font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-60"
-            >
-              <Download className="h-4 w-4" />
-              {offline ? (offline.done < offline.total ? `Saving… ${offline.done} of ${offline.total}` : 'Saved for offline') : 'Save for offline'}
-            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button onClick={() => setInstallOpen(true)} className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-4 font-semibold text-accent-ink">
+                <Download className="h-4 w-4" /> Get the app
+              </button>
+              <button
+                onClick={downloadOffline}
+                disabled={offline !== null && offline.done < offline.total}
+                className="inline-flex h-11 items-center gap-2 rounded-xl border border-line px-4 font-semibold text-ink-2 hover:bg-surface-2 disabled:opacity-60"
+              >
+                {offline ? (offline.done < offline.total ? `Saving… ${offline.done} of ${offline.total}` : 'Saved for offline') : 'Save my library for offline'}
+              </button>
+            </div>
           </>
         )}
       </Section>
 
       <Section title="Back up your notes" id="backup">
         <p className="text-sm text-ink-2">
-          Your highlights, notes, saved verses and plan progress live only on this device. Download a backup before you
-          change phones or clear your browser, then restore it on the new one.
+          Your highlights, notes, saved verses and plan progress live on this device. Download a backup before you change
+          phones or clear your browser, then restore it on the new one.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <button onClick={backup} className="inline-flex h-11 items-center gap-2 rounded-xl bg-accent px-4 font-semibold text-accent-ink">
             <Download className="h-4 w-4" /> Download backup
           </button>
-          <button
-            onClick={() => file.current?.click()}
-            className="inline-flex h-11 items-center gap-2 rounded-xl border border-line px-4 font-semibold text-ink-2 hover:bg-surface-2"
-          >
+          <button onClick={() => file.current?.click()} className="inline-flex h-11 items-center gap-2 rounded-xl border border-line px-4 font-semibold text-ink-2 hover:bg-surface-2">
             <Upload className="h-4 w-4" /> Restore a backup
           </button>
           <input
@@ -192,7 +215,10 @@ export default function SettingsView() {
 
       <Section title="About">
         <p className="text-sm text-ink-2">
-          Free because the Word is free. <Link href="/about/" className="font-medium text-accent underline">What is free and what costs money</Link>
+          Free because the Word is free.{' '}
+          <Link href="/about/" className="font-medium text-accent underline">
+            What is free and what costs money
+          </Link>
         </p>
         <button
           onClick={() => {
@@ -206,6 +232,7 @@ export default function SettingsView() {
           Clear all my data
         </button>
       </Section>
+      <InstallSheet open={installOpen} onClose={() => setInstallOpen(false)} />
       {toast.node}
     </div>
   )

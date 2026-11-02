@@ -2,7 +2,7 @@
 // Pages: network first, falling back to the cached copy. Bible data and app code:
 // served from cache and refreshed in the background.
 const CACHE = 'freely-v1'
-const CORE = ['/', '/read/', '/feed/', '/search/', '/plans/', '/saved/', '/settings/', '/about/', '/data/votd.json', '/data/translations.json', '/icon.svg']
+const CORE = ['/', '/read/', '/feed/', '/search/', '/plans/', '/saved/', '/settings/', '/about/', '/icon.svg']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

@@ -85,6 +85,12 @@ body {
   line-height: var(--reader-leading, 1.75);
 }
 
+.arabic {
+  font-family: 'Amiri', 'Noto Naskh Arabic', 'Geeza Pro', serif;
+  font-size: calc(var(--reader-size, 19px) * 1.35);
+  line-height: 2;
+}
+
 .verse {
   border-radius: 3px;
   cursor: pointer;

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Check } from 'lucide-react'
-import { chapterHref } from '@/lib/books'
+import { chapterHref, collectionById } from '@/lib/library'
 import { dayLabel, planById, scheduledDay } from '@/lib/plans'
 import { setPlanDay, startPlan, stopPlan, useHydrated, useStore } from '@/lib/store'
 import { PageTitle } from '@/components/ui'
@@ -32,7 +32,7 @@ export default function PlanView({ id }: { id: string }) {
         ← All plans
       </Link>
       <div className="mt-4">
-        <PageTitle eyebrow={`${plan.days.length} days`} title={plan.name}>
+        <PageTitle eyebrow={`${collectionById(plan.c).name} · ${plan.days.length} days`} title={plan.name}>
           {plan.description}
         </PageTitle>
       </div>
@@ -103,10 +103,10 @@ export default function PlanView({ id }: { id: string }) {
               </button>
               <div className="min-w-0 flex-1">
                 <span className="block text-xs text-ink-3">Day {n}</span>
-                <span className="font-medium">{dayLabel(day)}</span>
+                <span className="font-medium">{dayLabel(plan.c, day)}</span>
               </div>
               <Link
-                href={chapterHref(day[0][0], day[0][1])}
+                href={chapterHref(plan.c, day[0][0], day[0][1], day[0][2])}
                 className="h-10 shrink-0 rounded-full border border-line px-4 text-sm font-semibold leading-10 text-ink-2 hover:bg-surface-2"
               >
                 Read

@@ -2,11 +2,13 @@
 // costs money is priced at what it costs. Shown on /about/#costs. Detail in COSTS.md.
 
 export const FREE_FEATURES = [
-  'Four complete Bible translations (BSB, KJV, NHEB, ASV), readable offline',
+  'Nine holy books: the Bible (four translations), the Catholic Bible, the Tanakh, the Quran in Arabic and English, the Bhagavad Gita, the Dhammapada, the Tao Te Ching, the Analects and the Book of Mormon, readable offline',
   'Search every verse, or jump to any reference',
   'Verse of the day and the verse feed',
-  'Highlights, notes and saved verses',
-  'Reading plans with progress tracking',
+  'Highlights (whole verses or just the words you pick), notes and saved verses',
+  'Verse images to share on Instagram, TikTok, X and anywhere else',
+  'Installing it on your phone like an app',
+  'More than 30 reading plans with progress tracking',
   'Cross-references and side-by-side translation comparison',
   'Backing up your notes to a file',
 ]
@@ -32,10 +34,10 @@ export const COST_ITEMS: CostItem[] = [
     status: 'live',
   },
   {
-    name: 'Syncing notes across your devices',
+    name: 'Optional accounts that sync your notes across devices',
     whyItCosts: 'Needs a server to hold your notes. Free server plans cover tens of thousands of readers.',
     price: 'Free while it fits a free server plan. If it outgrows that, the cost is shared at cost, about $1 a year.',
-    status: 'not built',
+    status: 'planned',
   },
   {
     name: 'Audio Bible',
@@ -44,7 +46,7 @@ export const COST_ITEMS: CostItem[] = [
     status: 'not built',
   },
   {
-    name: 'AI study help',
+    name: 'AI study buddy',
     whyItCosts: 'Every question asked of an AI model is billed by the AI company, roughly a tenth of a cent each.',
     price: 'An optional pack priced at what the questions cost, plus the app store fee. Nothing more.',
     status: 'not built',

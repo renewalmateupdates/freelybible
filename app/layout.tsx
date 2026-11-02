@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import '@fontsource-variable/inter'
 import '@fontsource-variable/literata'
+import '@fontsource/amiri/arabic-400.css'
 import './globals.css'
 import AppShell from '@/components/AppShell'
 import ThemeSync from '@/components/ThemeSync'
@@ -9,10 +10,10 @@ import { SITE_URL } from '@/lib/site'
 
 export const metadata: Metadata = {
   metadataBase: SITE_URL ? new URL(SITE_URL) : undefined,
-  title: { default: 'Freely Bible: the free Bible app', template: '%s · Freely Bible' },
+  title: { default: 'Freely Scripture: holy books, free for everyone', template: '%s · Freely Scripture' },
   description:
-    'Read the Bible free: no ads, no account, no paywall. Four translations, offline reading, highlights, notes, reading plans, cross-references and a verse feed.',
-  applicationName: 'Freely Bible',
+    'Read the Bible, Quran, Tanakh, Bhagavad Gita, Dhammapada, Tao Te Ching and more, free: no ads, no account, no paywall. Offline reading, highlights, notes, reading plans and a verse feed.',
+  applicationName: 'Freely Scripture',
   manifest: '/manifest.webmanifest',
   icons: { icon: '/icon.svg', apple: '/icon-192.png' },
   appleWebApp: { capable: true, title: 'Freely', statusBarStyle: 'default' },

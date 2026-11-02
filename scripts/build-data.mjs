@@ -1,5 +1,4 @@
 // Builds the compact data the app ships with, from data-src/ (see fetch-sources.mjs).
-//   public/data/translations.json
 //   public/data/<t>/<book-slug>.json   chapters -> verse strings ("" = verse not in this translation)
 //   public/data/<t>/feed.json          popular verses for the scroll feed: [book, chapter, verse, text]
 //   public/data/xref/<book-slug>.json  { "c.v": [[book, chapter, verse, endChapter?, endVerse?], ...] }
@@ -91,7 +90,6 @@ for (const t of TRANSLATIONS) {
   }
   console.log(t.id, 'written', t.id === 'kjv' ? kjvStats : '')
 }
-await writeFile(`${OUT}/translations.json`, JSON.stringify(TRANSLATIONS.map(({ source, ...t }) => t)))
 
 // ---- cross-references (openbible.info, CC-BY): keep the strongest 12 per verse with 2+ votes
 function parseRef(s) {
@@ -160,7 +158,8 @@ for (let i = votdPool.length - 1; i > 0; i--) {
   const j = Math.floor(rand() * (i + 1))
   ;[votdPool[i], votdPool[j]] = [votdPool[j], votdPool[i]]
 }
-await writeFile(`${OUT}/votd.json`, JSON.stringify(votdPool))
+await mkdir(`${OUT}/votd`, { recursive: true })
+await writeFile(`${OUT}/votd/bible.json`, JSON.stringify(votdPool))
 console.log('votd written', votdPool.length)
 
 // ---- verse counts per chapter (BSB numbering), used to balance reading plans

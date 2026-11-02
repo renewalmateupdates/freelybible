@@ -4,9 +4,9 @@ export const dynamic = 'force-static'
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Freely Bible',
+    name: 'Freely Scripture',
     short_name: 'Freely',
-    description: 'The free Bible app. No ads, no account, no paywall.',
+    description: 'Holy books, free for everyone. No ads, no account, no paywall.',
     start_url: '/',
     display: 'standalone',
     background_color: '#fbf8f3',

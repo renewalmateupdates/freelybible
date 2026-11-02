@@ -2,8 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BookOpen, Bookmark, CalendarCheck, House, Search, Settings, Sparkles } from 'lucide-react'
+import { useState } from 'react'
+import { BookOpen, Bookmark, CalendarCheck, Download, House, Search, Settings, Sparkles } from 'lucide-react'
+import { useInstall } from '@/lib/install'
 import Logo from './Logo'
+import InstallSheet from './InstallSheet'
+import OfflineAuto from './OfflineAuto'
+import Onboarding from './library/Onboarding'
 
 const NAV = [
   { href: '/', label: 'Home', icon: House },
@@ -21,12 +26,14 @@ function isActive(pathname: string, href: string) {
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '/'
   const immersive = pathname.startsWith('/feed')
+  const install = useInstall()
+  const [installOpen, setInstallOpen] = useState(false)
 
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="pt-safe sticky top-0 z-30 border-b border-line bg-bg/90 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-3xl items-center gap-2 px-4">
-          <Link href="/" className="flex items-center gap-2 rounded-md py-1 pr-2" aria-label="Freely Bible home">
+          <Link href="/" className="flex items-center gap-2 rounded-md py-1 pr-2" aria-label="Freely Scripture home">
             <Logo className="h-7 w-7 text-accent" />
             <span className="font-serif text-lg font-semibold tracking-tight">Freely</span>
           </Link>
@@ -44,6 +51,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="ml-auto flex items-center">
+            {!install.installed && (
+              <button
+                onClick={() => setInstallOpen(true)}
+                className="mr-1 inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-3 text-sm font-semibold text-accent-ink"
+              >
+                <Download className="h-4 w-4" />
+                <span>Get app</span>
+              </button>
+            )}
             <Link
               href="/search/"
               aria-label="Search"
@@ -62,6 +78,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      <Onboarding />
+      <OfflineAuto />
+      <InstallSheet open={installOpen} onClose={() => setInstallOpen(false)} />
       <main className={`flex-1 ${immersive ? '' : 'pb-24 md:pb-10'}`}>{children}</main>
 
       <nav

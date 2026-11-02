@@ -1,30 +1,32 @@
 'use client'
 
 import { useState } from 'react'
-import { refKey, refLabel } from '@/lib/books'
+import { refKey, refLabel } from '@/lib/library'
 import { setNote, useStore } from '@/lib/store'
 import { Sheet } from '@/components/ui'
 
 export default function NoteSheet({
+  c,
   book,
   chapter,
   verse,
   verseText,
   onClose,
 }: {
+  c: string
   book: number
   chapter: number
   verse: number
   verseText: string
   onClose: () => void
 }) {
-  const key = refKey(book, chapter, verse)
+  const key = refKey(c, book, chapter, verse)
   const existing = useStore((s) => s.notes[key])
   const [text, setText] = useState(existing?.text ?? '')
 
   return (
-    <Sheet open onClose={onClose} title={`Note on ${refLabel({ book, chapter, verse })}`}>
-      <blockquote className="mb-3 border-l-2 border-accent pl-3 font-serif text-ink-2">{verseText}</blockquote>
+    <Sheet open onClose={onClose} title={`Note on ${refLabel({ c, book, chapter, verse })}`}>
+      <blockquote className="mb-3 whitespace-pre-line border-l-2 border-accent pl-3 font-serif text-ink-2">{verseText}</blockquote>
       <label htmlFor="note" className="sr-only">
         Your note
       </label>

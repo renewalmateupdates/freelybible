@@ -1,4 +1,4 @@
-# What Freely costs to run, and how anything paid would be priced
+# What Freely Scripture costs to run, and how anything paid would be priced
 
 Freely's rule: **give away everything that costs nothing to run, and charge only for what
 costs money, at what it costs.** This file is the working math behind that rule. The
@@ -10,10 +10,12 @@ anyone, and put the source and date next to the number when you do.
 
 ## Free forever (runs on the reader's phone, so it costs the same for 10 or 10 million readers)
 
-- Four public-domain translations (BSB, KJV, NHEB, ASV), bundled and offline
+- Nine collections of holy books in public-domain translations, bundled and offline
 - Search, verse of the day, verse feed
 - Highlights, notes, saved verses, reading plans
 - Cross-references and side-by-side translation comparison
+- Word-level highlighting and verse images for sharing
+- Installing to the home screen
 - Backup and restore to a file
 
 ## Fixed costs today
@@ -22,7 +24,7 @@ anyone, and put the source and date next to the number when you do.
 | --- | --- | --- |
 | Apple Developer Program | $99 / year | Needed for the App Store. |
 | Google Play developer account | $25 once | Needed for Google Play. |
-| Website hosting | $0 | The site is static files (about 105 MB, roughly 6,500 files). Cloudflare Pages' free plan has no bandwidth charge and allows 20,000 files per deploy (verify). Vercel's free Hobby plan is for non-commercial use (verify). |
+| Website hosting | $0 | The site is static files (about 150 MB, roughly 8,000 files). Cloudflare Pages' free plan has no bandwidth charge and allows 20,000 files per deploy (verify). Vercel's free Hobby plan is for non-commercial use (verify). |
 | Domain | about $10–20 / year (verify) | For a .com or .app name. |
 
 **First-year total: about $135–145.** Nothing else is needed to launch.
@@ -40,10 +42,10 @@ anyone, and put the source and date next to the number when you do.
 - **Cost:** Cloudflare R2 gives 10 GB of storage free and charges nothing for downloads (egress) (verify). Public domain recordings exist for the KJV, for example LibriVox volunteers (verify each recording's license).
 - **Price:** free, as long as the recordings are public domain and storage stays in the free plan. Professional narrations are licensed and would need their own price.
 
-### AI study help, "ask about this passage" (not built)
+### AI study buddy, "ask about this passage" (planned: $4.99/month, decided Nov 2026)
 - **What it needs:** a call to an AI model for every question.
 - **Cost per question (verify):** tokens in × input price + tokens out × output price. A question with a passage attached is roughly 1,500 tokens in and 400 out. On a small, fast model that is around a tenth of a cent.
-- **Price:** an optional pack, priced at cost plus the app store's cut and rounded up to the nearest price the store allows. For example: if a question costs $0.001, then 300 questions cost $0.30. After Apple's 15% (Small Business Program) and rounding, that is **$0.99 for 300 questions**. Recheck whenever the AI provider changes its prices.
+- **Price:** **$4.99 a month** with a fair-use cap, chosen over small packs because Stripe's 30-cent fee eats a third of a $1 purchase. Recheck the cap whenever the AI provider changes its prices, and publish what it is built on and what it cannot do.
 - **Guardrails:** a hard daily cap per device, so a bug or an abuser cannot run up a bill.
 
 ### Modern copyrighted translations: NIV, ESV, NLT, CSB, NKJV, NASB (not built)

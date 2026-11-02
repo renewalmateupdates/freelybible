@@ -3,26 +3,32 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { Trash2 } from 'lucide-react'
-import { chapterHref, parseKey, refLabel } from '@/lib/books'
+import { chapterHref, collectionById, parseKey, refLabel, translationById } from '@/lib/library'
 import { getVerse } from '@/lib/data'
-import { setBookmarks, setHighlight, setNote, useHydrated, useStore } from '@/lib/store'
+import { clearMarks, setBookmarks, setHighlight, setNote, useHydrated, useStore } from '@/lib/store'
 import { PageTitle } from '@/components/ui'
 
 type Tab = 'bookmarks' | 'highlights' | 'notes'
 
-function sortByBible(keys: string[]) {
+function translationFor(c: string, chosen: Record<string, string>) {
+  const col = collectionById(c)
+  return chosen[c] && col.translations.includes(chosen[c]) ? chosen[c] : col.translations[0]
+}
+
+function sortInOrder(keys: string[]) {
   return [...keys].sort((a, b) => {
-    const x = a.split('.').map(Number)
-    const y = b.split('.').map(Number)
-    return x[0] - y[0] || x[1] - y[1] || x[2] - y[2]
+    const x = parseKey(a)
+    const y = parseKey(b)
+    return x.c.localeCompare(y.c) || x.book - y.book || x.chapter - y.chapter || x.verse! - y.verse!
   })
 }
 
 export default function Saved() {
   const hydrated = useHydrated()
-  const translation = useStore((s) => s.settings.translation)
+  const translations = useStore((s) => s.settings.translations)
   const bookmarks = useStore((s) => s.bookmarks)
   const highlights = useStore((s) => s.highlights)
+  const marks = useStore((s) => s.marks)
   const notes = useStore((s) => s.notes)
   const [tab, setTab] = useState<Tab>('bookmarks')
   const [texts, setTexts] = useState<Record<string, string>>({})
@@ -30,40 +36,44 @@ export default function Saved() {
   const keys = useMemo(() => {
     if (tab === 'bookmarks') return Object.entries(bookmarks).sort((a, b) => b[1] - a[1]).map(([k]) => k)
     if (tab === 'notes') return Object.entries(notes).sort((a, b) => b[1].updatedAt - a[1].updatedAt).map(([k]) => k)
-    return sortByBible(Object.keys(highlights))
-  }, [tab, bookmarks, highlights, notes])
+    return sortInOrder(Array.from(new Set([...Object.keys(highlights), ...Object.keys(marks)])))
+  }, [tab, bookmarks, highlights, marks, notes])
 
   useEffect(() => {
     let cancelled = false
-    const missing = keys.filter((k) => texts[`${translation}:${k}`] === undefined).slice(0, 200)
+    const want = keys.map((k) => ({ k, t: translationFor(parseKey(k).c, translations) }))
+    const missing = want.filter(({ k, t }) => texts[`${t}:${k}`] === undefined).slice(0, 200)
     if (!missing.length) return
     Promise.all(
-      missing.map(async (k) => {
+      missing.map(async ({ k, t }) => {
         const { book, chapter, verse } = parseKey(k)
-        return [`${translation}:${k}`, (await getVerse(translation, book, chapter, verse!).catch(() => '')).replace('¶', '').trim()] as const
+        return [`${t}:${k}`, (await getVerse(t, book, chapter, verse!).catch(() => '')).replace('¶', '').trim()] as const
       }),
     ).then((pairs) => !cancelled && setTexts((t) => ({ ...t, ...Object.fromEntries(pairs) })))
     return () => {
       cancelled = true
     }
-  }, [keys, translation]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [keys, translations]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const counts = {
     bookmarks: Object.keys(bookmarks).length,
-    highlights: Object.keys(highlights).length,
+    highlights: new Set([...Object.keys(highlights), ...Object.keys(marks)]).size,
     notes: Object.keys(notes).length,
   }
 
   function remove(key: string) {
     if (tab === 'bookmarks') setBookmarks([key], false)
-    if (tab === 'highlights') setHighlight([key], null)
+    if (tab === 'highlights') {
+      setHighlight([key], null)
+      for (const t of collectionById(parseKey(key).c).translations) clearMarks([key], t)
+    }
     if (tab === 'notes' && window.confirm('Delete this note?')) setNote(key, '')
   }
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
       <PageTitle eyebrow="Saved" title="Your verses">
-        Kept on this device only. Back them up from <Link href="/settings/#backup" className="text-accent underline">Settings</Link>.
+        Kept on this device. Back them up from <Link href="/settings/#backup" className="text-accent underline">Settings</Link>.
       </PageTitle>
 
       <div className="mb-6 grid grid-cols-3 rounded-xl bg-surface-2 p-1 text-sm font-semibold">
@@ -94,14 +104,28 @@ export default function Saved() {
       <ul className="space-y-2">
         {keys.map((key) => {
           const ref = parseKey(key)
-          const text = texts[`${translation}:${key}`]
+          const t = translationFor(ref.c, translations)
+          const text = texts[`${t}:${key}`]
           const color = highlights[key]
+          const rtl = translationById(t).dir === 'rtl'
+          const partial = !color && tab === 'highlights' ? (marks[key] ?? []).filter((m) => m.t === t) : []
           return (
             <li key={key} className="flex gap-2 rounded-xl border border-line bg-surface p-4">
-              <Link href={chapterHref(ref.book, ref.chapter, ref.verse)} className="min-w-0 flex-1">
+              <Link href={chapterHref(ref.c, ref.book, ref.chapter, ref.verse)} className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-accent">{refLabel(ref)}</span>
-                <span className={`mt-1 block font-serif leading-relaxed ${tab === 'highlights' && color ? `hl-${color}` : ''}`}>
-                  {text ?? '…'}
+                <span
+                  dir={rtl ? 'rtl' : undefined}
+                  className={`mt-1 block whitespace-pre-line font-serif leading-relaxed ${rtl ? 'arabic text-right' : ''} ${tab === 'highlights' && color ? `hl-${color}` : ''}`}
+                >
+                  {text === undefined
+                    ? '…'
+                    : partial.length
+                      ? partial.map((m, i) => (
+                          <mark key={i} className={`hl-${m.color} mr-1 rounded text-inherit`}>
+                            {text.slice(m.s, m.e)}
+                          </mark>
+                        ))
+                      : text}
                 </span>
                 {tab === 'notes' && notes[key] && (
                   <span className="mt-2 block whitespace-pre-wrap rounded-lg bg-surface-2 p-3 text-sm text-ink-2">{notes[key].text}</span>

@@ -1,8 +1,8 @@
 'use client'
 
-import { BOOKS } from './books'
+import { collectionById, translationById } from './library'
 
-// All Bible data is static files under /data, bundled with the app.
+// All scripture data is static files under /data, bundled with the app.
 // Fetches are cached in memory for the session (and by the service worker on the web).
 
 export type BookText = string[][] // chapters -> verses ("" = not in this translation)
@@ -24,8 +24,13 @@ function getJson<T>(path: string): Promise<T> {
   return p
 }
 
+export function bookPath(translation: string, book: number) {
+  const col = collectionById(translationById(translation).collection)
+  return `/data/${translation}/${col.books[book].slug}.json`
+}
+
 export function getBook(translation: string, book: number): Promise<BookText> {
-  return getJson<BookText>(`/data/${translation}/${BOOKS[book].slug}.json`)
+  return getJson<BookText>(bookPath(translation, book))
 }
 
 export async function getChapter(translation: string, book: number, chapter: number): Promise<string[]> {
@@ -38,24 +43,31 @@ export async function getVerse(translation: string, book: number, chapter: numbe
   return ch[verse - 1] ?? ''
 }
 
+/** Bible cross-references (OpenBible.info), keyed "chapter.verse". */
 export function getXref(book: number): Promise<Record<string, XrefTarget[]>> {
-  return getJson(`/data/xref/${BOOKS[book].slug}.json`)
+  return getJson(`/data/xref/${collectionById('bible').books[book].slug}.json`)
 }
 
 export function getFeed(translation: string): Promise<FeedItem[]> {
   return getJson(`/data/${translation}/feed.json`)
 }
 
-export function getVotdRefs(): Promise<[number, number, number][]> {
-  return getJson('/data/votd.json')
-}
-
-/** Today's verse: the same for everyone on a given calendar day. */
-export async function getVerseOfTheDay(translation: string, date = new Date()) {
-  const refs = await getVotdRefs()
+/** Today's verse for a collection: the same for everyone on a given calendar day. */
+export async function getVerseOfTheDay(c: string, translation: string, date = new Date()) {
+  const refs = await getJson<[number, number, number][]>(`/data/votd/${c}.json`)
   const start = new Date(date.getFullYear(), 0, 0)
   const day = Math.floor((date.getTime() - start.getTime()) / 86_400_000)
   const [book, chapter, verse] = refs[(day - 1 + refs.length) % refs.length]
   const text = await getVerse(translation, book, chapter, verse)
-  return { book, chapter, verse, text }
+  return { c, book, chapter, verse, text }
+}
+
+/** Every data file for a translation, for "Save for offline". */
+export function translationFiles(translation: string): string[] {
+  const t = translationById(translation)
+  const col = collectionById(t.collection)
+  const files = col.books.map((b) => `/data/${translation}/${b.slug}.json`)
+  files.push(`/data/${translation}/feed.json`, `/data/votd/${col.id}.json`)
+  if (col.xref) files.push(...col.books.map((b) => `/data/xref/${b.slug}.json`))
+  return files
 }
