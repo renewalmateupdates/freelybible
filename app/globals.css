@@ -1,0 +1,133 @@
+@import 'tailwindcss';
+
+/* Three reading themes. The theme lives on <html data-theme="...">, set before
+   first paint by the inline script in app/layout.tsx. */
+:root,
+[data-theme='light'] {
+  --bg: #fbf8f3;
+  --surface: #ffffff;
+  --surface-2: #f2ede4;
+  --ink: #1d1b18;
+  --ink-2: #4a453e;
+  --ink-3: #6f685e;
+  --line: #e6dfd3;
+  --accent: #85532a;
+  --accent-ink: #ffffff;
+  --accent-soft: #f2e6d8;
+  color-scheme: light;
+}
+
+[data-theme='sepia'] {
+  --bg: #f4ecd8;
+  --surface: #f9f2e1;
+  --surface-2: #ebe0c6;
+  --ink: #3b2f22;
+  --ink-2: #5b4a37;
+  --ink-3: #7a6852;
+  --line: #e0d2b4;
+  --accent: #85532a;
+  --accent-ink: #ffffff;
+  --accent-soft: #ead9bb;
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg: #121110;
+  --surface: #1b1a18;
+  --surface-2: #25231f;
+  --ink: #ece7df;
+  --ink-2: #c4bdb2;
+  --ink-3: #9a9388;
+  --line: #2f2c28;
+  --accent: #dcab72;
+  --accent-ink: #1a1208;
+  --accent-soft: #3a2c1e;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Literata Variable', Georgia, 'Times New Roman', serif;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Highlight colors: translucent so they read in every theme. */
+.hl-yellow { background: rgb(250 204 21 / 0.34); }
+.hl-green { background: rgb(74 222 128 / 0.3); }
+.hl-blue { background: rgb(96 165 250 / 0.3); }
+.hl-pink { background: rgb(244 114 182 / 0.3); }
+.hl-purple { background: rgb(167 139 250 / 0.32); }
+
+.scripture {
+  font-family: var(--font-serif);
+  font-size: var(--reader-size, 19px);
+  line-height: var(--reader-leading, 1.75);
+}
+
+.verse {
+  border-radius: 3px;
+  cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  padding: 0.05em 0;
+}
+
+.verse:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.verse.selected {
+  text-decoration: underline dotted var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 5px;
+}
+
+.verse-num {
+  font-family: var(--font-sans);
+  font-size: 0.6em;
+  font-weight: 600;
+  color: var(--ink-3);
+  vertical-align: super;
+  margin-right: 0.25em;
+  user-select: none;
+}
+
+/* Feed fills the space between the header and the bottom nav. */
+.feed-scroller {
+  height: calc(100dvh - 3.5rem - 4rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .feed-scroller { height: calc(100dvh - 3.5rem - env(safe-area-inset-top)); }
+}
+
+.pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+.pt-safe { padding-top: env(safe-area-inset-top); }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}
